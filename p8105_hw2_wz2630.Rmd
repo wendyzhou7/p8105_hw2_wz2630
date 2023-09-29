@@ -3,4 +3,79 @@ title: "p8105_hw2_wz2630"
 output: github_document
 date: "2023-09-28"
 ---
+```{r}
+library(tidyverse)
+```
+
+# problem 1
+```{r}
+pols_month_df = 
+  read_csv("hw2_datasets/pols-month.csv") |> 
+  mutate(year = year(mon), month = month(mon), day = day(mon),
+         case_match(
+          month,
+          1 ~ "January",
+          2 ~ "February",
+          3 ~ "March",
+          4 ~ "April",
+          5 ~ "May",
+          6 ~ "June",
+          7 ~ "July",
+          8 ~ "August",
+          9 ~ "September",
+          10 ~ "October",
+          11 ~ "November",
+          12 ~ "December"))
+    
+  
+```
+
+
+
+```{r}
+#snp_df = 
+  #read_csv("hw2_datasets/snp.csv") |> 
+  #mutate(month = month(date), day = day(date), year = year(date),
+         #case_match(
+         # month,
+          #1 ~ "January",
+          #2 ~ "February",
+          #3 ~ "March",
+          #4 ~ "April",
+          #5 ~ "May",
+          #6 ~ "June",
+          #7 ~ "July",
+          #8 ~ "August",
+         # 9 ~ "September",
+         # 10 ~ "October",
+        #  11 ~ "November",
+        #  12 ~ "December"))
+```
+
+
+# problem 2
+```{r}
+TWC_df = 
+  readxl::read_excel("hw2_datasets/202207 Trash Wheel Collection Data.xlsx")
+```
+
+
+
+# problem 3
+```{r}
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
 
