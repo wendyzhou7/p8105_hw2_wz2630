@@ -7,7 +7,7 @@ date: "2023-09-28"
 library(tidyverse)
 ```
 
-# problem 1
+# Problem 1
 ```{r}
 pols_month_df = 
   read_csv("hw2_datasets/pols-month.csv") |> 
@@ -53,14 +53,15 @@ pols_month_df =
 ```
 
 
-# problem 2
+# Problem 2
 ```{r}
 # Mr. Trash Wheel sheet
 mr_trash_wheel = 
   readxl::read_excel("hw2_datasets/202207 Trash Wheel Collection Data.xlsx", 
                      range = "A2:N549") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30)
+  mutate(homes_powered_new = (weight_tons*500)/30, 
+         trash_wheel = "mr")
   
 ```
 
@@ -71,7 +72,8 @@ prof_trash_wheel =
                      sheet = 2, 
                      range = "A2:M96") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30)
+  mutate(homes_powered_new = (weight_tons*500)/30, 
+         trash_wheel = "professor")
 ```
 
 ```{r}
@@ -81,19 +83,37 @@ gwynnda_trash_wheel =
                      sheet = 4, 
                      range = "A2:K108") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30)
+  mutate(homes_powered_new = (weight_tons*500)/30, 
+         trash_wheel = "gwynnda")
 ```
 
 ```{r}
 # combining 3 trashwheel datasets
+#trash_wheels_df =
 ```
 
 
-# problem 3
+# Problem 3
 ```{r}
-
+# baseline demographics
+mci_baseline = 
+  read_csv("hw2_datasets/data_mci/MCI_baseline.csv",
+           skip = 1) |> 
+  janitor::clean_names() |> 
+  mutate(
+    sex = case_match(sex, 1 ~ "male",0 ~ "female"),
+    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier"))
+  
+  
 ```
 
+```{r}
+# biomarkers data
+mci_amyloid = 
+  read_csv("hw2_datasets/data_mci/mci_amyloid.csv",
+           skip = 1) |> 
+  janitor::clean_names()
+```
 
 
 
