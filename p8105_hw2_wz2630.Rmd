@@ -102,19 +102,32 @@ mci_baseline =
   janitor::clean_names() |> 
   mutate(
     sex = case_match(sex, 1 ~ "male",0 ~ "female"),
-    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier"))
+    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier")) |> 
+  rename("study_id" = "id")
   
   
 ```
 
 ```{r}
-# biomarkers data
+# amyloid data
 mci_amyloid = 
   read_csv("hw2_datasets/data_mci/mci_amyloid.csv",
            skip = 1) |> 
   janitor::clean_names()
 ```
 
+```{r}
+# Check whether some participants appear in only the baseline or amyloid datasets
+```
+
+
+```{r}
+# combine baseline and amyloid datasets
+baseline_amyloid = 
+  left_join(mci_baseline, mci_amyloid, by = "study_id") |> 
+  filter(!is.na(baseline)) # removes na under baseline variable
+  
+```
 
 
 
