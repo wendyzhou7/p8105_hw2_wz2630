@@ -99,12 +99,8 @@ gwynnda_trash_wheel =
 # combining 3 trashwheel datasets
 trash_wheels_df =
   bind_rows(mr_trash_wheel, prof_trash_wheel, gwynnda_trash_wheel)
-
-
-## having some trouble combining the 3 trash wheel datasets
-#having an error saying year is year is a character variable
 ```
-
+The combined dataset has 747 observations and 17 variables.
 
 # Problem 3
 ```{r}
