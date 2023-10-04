@@ -3,7 +3,7 @@ title: "p8105_hw2_wz2630"
 output: github_document
 date: "2023-09-28"
 ---
-```{r}
+```{r, message=FALSE}
 library(tidyverse)
 library(readxl)
 ```
@@ -33,7 +33,6 @@ pols_month_df =
     
   
 ```
-
 
 
 ```{r}
@@ -66,8 +65,9 @@ mr_trash_wheel =
                      range = "A2:N586") |> 
   janitor::clean_names() |> 
   mutate(homes_powered = (weight_tons*500)/30, 
-         trash_wheel = "mr",
-         year = as.numeric(year))
+         name = "mr",
+         year = as.numeric(year)) |> 
+  select(name, everything())
 ```
 
 Professor Trash Wheel
@@ -78,7 +78,8 @@ prof_trash_wheel =
                      range = "A2:M108") |> 
   janitor::clean_names() |> 
   mutate(homes_powered = (weight_tons*500)/30, 
-         trash_wheel = "professor")
+         name = "professor") |> 
+  select(name, everything())
 ```
 
 Gwynnda Trash Wheel
@@ -89,7 +90,8 @@ gwynnda_trash_wheel =
                      range = "A2:L157") |> 
   janitor::clean_names() |> 
   mutate(homes_powered = (weight_tons*500)/30, 
-         trash_wheel = "gwynnda")
+         name = "gwynnda") |> 
+  select(name, everything())
 ```
 
 Combining 3 trashwheel datasets
@@ -106,7 +108,9 @@ gwynnda_trash_wheel |>
     summarize(num = n(),cig_butts_total = sum(cigarette_butts))
 ```
 
-The combined dataset has 845 observations and 15 variables.
+The combined dataset results in 845 observations and 15 variables. The key variables in this combined dataset are
+name (of trash wheel), id (of trash wheel), month and year (trash was collected), weight_tons, homes_powered, and variable names indicating trash types.
+
 The total weight of trash collected by Professor Trash Wheel is 216.26 tons.
 The total number of cigarette butts collected by Gwynnda in July of 2021 is 16,300.
 
