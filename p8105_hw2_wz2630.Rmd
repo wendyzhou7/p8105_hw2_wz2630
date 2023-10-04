@@ -11,7 +11,7 @@ library(readxl)
 # Problem 1
 ```{r}
 pols_month_df = 
-  read_csv("hw2_datasets/pols-month.csv") |> 
+  read_csv("./hw2_datasets/pols-month.csv") |> 
   mutate(year = year(mon), month = month(mon), day = day(mon),
          
          case_match(
@@ -61,7 +61,7 @@ pols_month_df =
 Mr. Trash Wheel
 ```{r}
 mr_trash_wheel = 
-  readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
+  readxl::read_excel("./hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
                      range = "A2:N586") |> 
   janitor::clean_names() |> 
   mutate(homes_powered = (weight_tons*500)/30, 
@@ -73,7 +73,7 @@ mr_trash_wheel =
 Professor Trash Wheel
 ```{r}
 prof_trash_wheel = 
-  readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
+  readxl::read_excel("./hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
                      sheet = 2, 
                      range = "A2:M108") |> 
   janitor::clean_names() |> 
@@ -85,7 +85,7 @@ prof_trash_wheel =
 Gwynnda Trash Wheel
 ```{r}
 gwynnda_trash_wheel = 
-  readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
+  readxl::read_excel("./hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
                      sheet = 4, 
                      range = "A2:L157") |> 
   janitor::clean_names() |> 
@@ -122,7 +122,7 @@ Baseline Demographics Data
 ```{r}
 # Load, clean, and filter baseline demographics data
 mci_baseline = 
-  read_csv("hw2_datasets/data_mci/MCI_baseline.csv",
+  read_csv("./hw2_datasets/data_mci/MCI_baseline.csv",
            skip = 1,
            na = c(".")) |> 
   janitor::clean_names() |> 
@@ -176,7 +176,7 @@ excluded_id = mci_baseline |>
 
   # second, clean amyloid data and filter out the participants using the vector
 mci_amyloid = 
-  read_csv("hw2_datasets/data_mci/mci_amyloid.csv",
+  read_csv("./hw2_datasets/data_mci/mci_amyloid.csv",
            skip = 1) |> 
   janitor::clean_names() |> 
   filter(!study_id %in% c(excluded_id))
