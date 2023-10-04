@@ -118,7 +118,7 @@ The total number of cigarette butts collected by Gwynnda in July of 2021 is 16,3
 
 # Problem 3
 
-Baseline Demographics Data:
+Baseline Demographics Data
 ```{r}
 # Load, clean, and filter baseline demographics data
 mci_baseline = 
@@ -137,11 +137,11 @@ mci_baseline =
       1 ~ "carrier", 
       0 ~ "non-carrier"))
 ```
-
+There are 483 observations before removing participants who did not fulfill "no MCI at baseline" criteria.
 
 ```{r}
 # exclude if MCI at baseline
-clean_mci_baseline = 
+mci_free_baseline = 
   mci_baseline |> 
   filter(age_at_onset - current_age > 0 | is.na(age_at_onset)) 
 
@@ -151,63 +151,77 @@ develop_mci =
   filter(age_at_onset - current_age > 0)
 
 # average baseline age
-clean_mci_baseline |> 
+mci_free_baseline |> 
     summarize(num = n(),
               mean = mean(current_age))
 
 # proportion of women in the study are APOE4 carriers
-nrow(filter(clean_mci_baseline, sex == "female" & apoe4 == "carrier")) / nrow(filter(clean_mci_baseline, sex == "female"))
+nrow(filter(mci_free_baseline, sex == "female" & apoe4 == "carrier")) / nrow(filter(mci_free_baseline, sex == "female"))
 ```
+There were originally **483** participants recruited and we then removed those who did not meet the inclusion criteria of no MCI at baseline (resulting in 479 observations) and filtering for those who do develop MCI, we get **93** remaining participants (who develop MCI).
 
-**Important steps to import process:**
-The important steps to importing the dataset include using the read_csv function, cleaning the variable names into snake case, using the case_match function to turn numeric values of sex and apoe4 into descriptive characters, and removing participants who do not fulfill baseline requirements.
+The average baseline age is **65** years old -- calculated after cleaning and removing those who did not meet no MCI
+at baseline criteria.
 
-**Relevant features of dataset:**
-??? dimensions, variables present, anti_joins, come up with explanations, guesswork
-
-There were originally 483 participants recruited and we then removed those who did not meet the inclusion criteria of no MCI at baseline and filtering for those who do develop MCI, we get 93 remaining participants.
-The average baseline age is **65** years old. 
 **30%** of women in the study are APOE4 carriers.
 
 
-Amyloid Data:
+Amyloid Data
 ```{r}
 # Load amyloid data
+  # first create a vector of participants who did not satisfy baseline criteria
+excluded_id = mci_baseline |> 
+  filter(age_at_onset - current_age <= 0) |> 
+  pull(study_id)
+
+  # second, clean amyloid data and filter out the participants using the vector
 mci_amyloid = 
   read_csv("hw2_datasets/data_mci/mci_amyloid.csv",
            skip = 1) |> 
-  janitor::clean_names()
+  janitor::clean_names() |> 
+  filter(!study_id %in% c(excluded_id))
 ```
+
+**Important steps to import process:**
+The important steps to importing the datasets include using the read_csv function, cleaning the variable names into snake case, using the case_match function to turn numeric values of sex and apoe4 into descriptive characters, and removing participants who do not fulfill baseline requirements.
+
+For the amyloid dataset, it is important to first create a vector of pariticipants who did not meet baseline criteria so that filtering can happen in the same step as cleaning.
+
+**Relevant features of dataset:**
+Baseline demographics (mci_free_baseline) dataset consists of 479 observations who meet baseline criteria and 6 variables -- including study_id, current_age, sex, education (years), apeo4 (status), and age_at_onset.
+
+Amyloid dataset consists of 483 participants after cleaning and filtering out patients who did not statisfy no MCI at baseline criteria. The dataset consists of 6 variables including study_id and amyloid β42/40 ratios recorded at baseline, and 4 other times (2, 4, 6, 8 years) sequentially after baseline. 
 
 
 ```{r}
 # shows observations that are only in mci_baseline dataset
-anti_join(mci_baseline, mci_amyloid, by="study_id")
+anti_join(mci_free_baseline, mci_amyloid, by="study_id")
 ```
-There are 8 participants that are only included in baseline, but not the amyloid dataset. The study_id of
+There are 8 participants that are only included in baseline, but excluded in the amyloid dataset. The study_id of
 these participants include: 14, 49, 92, 179, 268, 304, 389, 412.
 
 
 ```{r}
 # shows observations that are only in mci_amyloid dataset
-anti_join(mci_amyloid, mci_baseline, by="study_id")
+anti_join(mci_amyloid, mci_free_baseline, by="study_id")
 ```
-There are 12 participants that are only included in amyloid, but not the baseline dataset.The study_id of
+There are 12 participants that are only included in amyloid, but excluded in the baseline dataset.The study_id of
 these participants include: 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495.
 
 
-Combined dataset with common participants:
+Combining mci_free_baseline & mci_amyloid datasets with common participants
 ```{r}
 # shows observations that are only in mci_amyloid dataset
 mci = 
   inner_join(mci_baseline, mci_amyloid, by = "study_id")
 ```
-After combining the demographic and biomarker datasets so that only participants who appear in both datasets are retained, the resulting dataset (baseline_amyloid) consists of **475** observations with 11 variables.
+**Resulting dataset:**
+After combining the baseline demographic and biomarker datasets so that only participants who appear in both datasets are retained, the resulting dataset (baseline_amyloid) consists of **471** observations with 11 variables. These variables include study_id, current_age, sex, education, apoe4 (status), age_at_onset, baseline:time_8 (time at which amyloid β42/40 ratios were recorded).
 
 
 ```{r}
-#Export the result as a CSV to your data directory
-write_csv(mci, "./mci_df_cleaned.csv")
+# Export the result as a CSV to your data directory
+write_csv(mci, "./mci.csv")
 ```
 
 
