@@ -102,19 +102,19 @@ sum(prof_trash_wheel[, 'weight_tons'])
 
 # total number of cigarette butts collected by Gwynnda in July of 2021
 gwynnda_trash_wheel |> 
-    group_by(year) |>  
-    summarize(num = n(),
-              cig_butts_total = sum(cigarette_butts))
+    group_by(year, month) |>  
+    summarize(num = n(),cig_butts_total = sum(cigarette_butts))
 ```
 
-The combined dataset has 747 observations and 17 variables.
+The combined dataset has 845 observations and 15 variables.
 The total weight of trash collected by Professor Trash Wheel is 216.26 tons.
-The total number of cigarette butts collected by Gwynnda in July of 2021 is 98,300.
+The total number of cigarette butts collected by Gwynnda in July of 2021 is 16,300.
 
 
 
 # Problem 3
 
+Baseline Demographics Data:
 ```{r}
 # Load, clean, and filter baseline demographics data
 mci_baseline = 
@@ -131,21 +131,28 @@ mci_baseline =
     apoe4 = case_match(
       apoe4, 
       1 ~ "carrier", 
-      0 ~ "non-carrier")) |> 
-  filter(age_at_onset - current_age > 0) #exclusion criteria: mci at baseline
+      0 ~ "non-carrier"))
 ```
 
 
 ```{r}
+# exclude if MCI at baseline
+clean_mci_baseline = 
+  mci_baseline |> 
+  filter(age_at_onset - current_age > 0 | is.na(age_at_onset)) 
+
+# number of people who develop mci
+develop_mci = 
+  mci_baseline |> 
+  filter(age_at_onset - current_age > 0)
+
 # average baseline age
-mci_baseline |> 
+clean_mci_baseline |> 
     summarize(num = n(),
               mean = mean(current_age))
-# are we looking for mean age of filtered data? yes
-
 
 # proportion of women in the study are APOE4 carriers
-nrow(filter(mci_baseline, sex == "female" & apoe4 == "carrier")) / nrow(filter(mci_baseline, sex == "female"))
+nrow(filter(clean_mci_baseline, sex == "female" & apoe4 == "carrier")) / nrow(filter(clean_mci_baseline, sex == "female"))
 ```
 
 **Important steps to import process:**
@@ -155,10 +162,11 @@ The important steps to importing the dataset include using the read_csv function
 ??? dimensions, variables present, anti_joins, come up with explanations, guesswork
 
 There were originally 483 participants recruited and we then removed those who did not meet the inclusion criteria of no MCI at baseline and filtering for those who do develop MCI, we get 93 remaining participants.
-The average baseline age is **65.5** years old. 
-**66.67%** of women in the study are APOE4 carriers.
+The average baseline age is **65** years old. 
+**30%** of women in the study are APOE4 carriers.
 
 
+Amyloid Data:
 ```{r}
 # Load amyloid data
 mci_amyloid = 
@@ -168,9 +176,8 @@ mci_amyloid =
 ```
 
 
-Check whether some participants appear in only the baseline or amyloid datasets
 ```{r}
-# # shows observations that are only in mci_baseline dataset
+# shows observations that are only in mci_baseline dataset
 anti_join(mci_baseline, mci_amyloid, by="study_id")
 ```
 There are 8 participants that are only included in baseline, but not the amyloid dataset. The study_id of
@@ -185,6 +192,7 @@ There are 12 participants that are only included in amyloid, but not the baselin
 these participants include: 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495.
 
 
+Combined dataset with common participants:
 ```{r}
 # shows observations that are only in mci_amyloid dataset
 mci = 
