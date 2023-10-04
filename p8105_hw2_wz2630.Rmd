@@ -58,41 +58,42 @@ pols_month_df =
 
 
 # Problem 2
+
+Mr. Trash Wheel
 ```{r}
-# Mr. Trash Wheel sheet
 mr_trash_wheel = 
   readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
-                     range = "A2:N549") |> 
+                     range = "A2:N586") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30, 
+  mutate(homes_powered = (weight_tons*500)/30, 
          trash_wheel = "mr",
          year = as.numeric(year))
 ```
 
+Professor Trash Wheel
 ```{r}
-# Professor Trash Wheel
 prof_trash_wheel = 
   readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
                      sheet = 2, 
-                     range = "A2:M96") |> 
+                     range = "A2:M108") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30, 
+  mutate(homes_powered = (weight_tons*500)/30, 
          trash_wheel = "professor")
 ```
 
+Gwynnda Trash Wheel
 ```{r}
-# Gwynnda
 gwynnda_trash_wheel = 
   readxl::read_excel("hw2_datasets/202309 Trash Wheel Collection Data.xlsx", 
                      sheet = 4, 
-                     range = "A2:K108") |> 
+                     range = "A2:L157") |> 
   janitor::clean_names() |> 
-  mutate(homes_powered_new = (weight_tons*500)/30, 
+  mutate(homes_powered = (weight_tons*500)/30, 
          trash_wheel = "gwynnda")
 ```
 
+Combining 3 trashwheel datasets
 ```{r}
-# combining 3 trashwheel datasets
 trash_wheels_df =
   bind_rows(mr_trash_wheel, prof_trash_wheel, gwynnda_trash_wheel)
 
@@ -105,52 +106,97 @@ gwynnda_trash_wheel |>
     summarize(num = n(),
               cig_butts_total = sum(cigarette_butts))
 ```
+
 The combined dataset has 747 observations and 17 variables.
-The total weight of trash collected by Professor Trash Wheel is 190.12 tons.
-The total number of cigarette butts collected by Gwynnda in July of 2021 is 98,3000.
+The total weight of trash collected by Professor Trash Wheel is 216.26 tons.
+The total number of cigarette butts collected by Gwynnda in July of 2021 is 98,300.
 
 
 
 # Problem 3
-```{r}
-# load baseline demographics data
-mci_baseline = 
-  read_csv("hw2_datasets/data_mci/MCI_baseline.csv",
-           skip = 1) |> 
-  janitor::clean_names() |> 
-  mutate(
-    sex = case_match(sex, 1 ~ "male",0 ~ "female"),
-    apoe4 = case_match(apoe4, 1 ~ "carrier", 0 ~ "non-carrier")) |> 
-  rename("study_id" = "id")
-  
-  
-```
 
 ```{r}
-# load amyloid data
+# Load, clean, and filter baseline demographics data
+mci_baseline = 
+  read_csv("hw2_datasets/data_mci/MCI_baseline.csv",
+           skip = 1,
+           na = c(".")) |> 
+  janitor::clean_names() |> 
+  rename("study_id" = "id") |> 
+  mutate(
+    sex = case_match(
+      sex, 
+      1 ~ "male",
+      0 ~ "female"),
+    apoe4 = case_match(
+      apoe4, 
+      1 ~ "carrier", 
+      0 ~ "non-carrier")) |> 
+  filter(age_at_onset - current_age > 0) #exclusion criteria: mci at baseline
+```
+
+
+```{r}
+# average baseline age
+mci_baseline |> 
+    summarize(num = n(),
+              mean = mean(current_age))
+# are we looking for mean age of filtered data? yes
+
+
+# proportion of women in the study are APOE4 carriers
+nrow(filter(mci_baseline, sex == "female" & apoe4 == "carrier")) / nrow(filter(mci_baseline, sex == "female"))
+```
+
+**Important steps to import process:**
+The important steps to importing the dataset include using the read_csv function, cleaning the variable names into snake case, using the case_match function to turn numeric values of sex and apoe4 into descriptive characters, and removing participants who do not fulfill baseline requirements.
+
+**Relevant features of dataset:**
+??? dimensions, variables present, anti_joins, come up with explanations, guesswork
+
+There were originally 483 participants recruited and we then removed those who did not meet the inclusion criteria of no MCI at baseline and filtering for those who do develop MCI, we get 93 remaining participants.
+The average baseline age is **65.5** years old. 
+**66.67%** of women in the study are APOE4 carriers.
+
+
+```{r}
+# Load amyloid data
 mci_amyloid = 
   read_csv("hw2_datasets/data_mci/mci_amyloid.csv",
            skip = 1) |> 
   janitor::clean_names()
 ```
 
+
+Check whether some participants appear in only the baseline or amyloid datasets
 ```{r}
-# Check whether some participants appear in only the baseline or amyloid datasets
-
+# # shows observations that are only in mci_baseline dataset
+anti_join(mci_baseline, mci_amyloid, by="study_id")
 ```
+There are 8 participants that are only included in baseline, but not the amyloid dataset. The study_id of
+these participants include: 14, 49, 92, 179, 268, 304, 389, 412.
 
 
 ```{r}
-# combine baseline and amyloid datasets
-baseline_amyloid = 
-  left_join(mci_baseline, mci_amyloid, by = "study_id") |> 
-  filter(!is.na(baseline)) # removes na under baseline variable
-  
+# shows observations that are only in mci_amyloid dataset
+anti_join(mci_amyloid, mci_baseline, by="study_id")
 ```
+There are 12 participants that are only included in amyloid, but not the baseline dataset.The study_id of
+these participants include: 484, 485, 486, 487, 488, 489, 490, 491, 492, 493, 494, 495.
 
 
+```{r}
+# shows observations that are only in mci_amyloid dataset
+mci = 
+  inner_join(mci_baseline, mci_amyloid, by = "study_id")
+```
+After combining the demographic and biomarker datasets so that only participants who appear in both datasets are retained, the resulting dataset (baseline_amyloid) consists of **475** observations with 11 variables.
 
 
+```{r}
+#Export the result as a CSV to your data directory
+write_csv(mci, "./mci_df_cleaned.csv")
+```
 
 
 
